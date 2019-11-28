@@ -1,18 +1,25 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  
+  <div>
+    <Breadcrumb :style="{margin: '16px 0'}">
+        <BreadcrumbItem>首页</BreadcrumbItem>
+    </Breadcrumb>
+    <Card>
+     Welcome To The SHI-XI-SENG AdminSystem.
+    </Card>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
-
+import { Breadcrumb, BreadcrumbItem, Card } from "view-design"
 export default {
-  name: 'home',
   components: {
-    HelloWorld
+     Breadcrumb, 
+     BreadcrumbItem, 
+     Card
   }
 }
 </script>
+
+<style scoped>
+</style>
