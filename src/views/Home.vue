@@ -5,7 +5,7 @@
         <BreadcrumbItem>首页</BreadcrumbItem>
     </Breadcrumb>
     <Card>
-     Welcome To The SHI-XI-SENG AdminSystem.
+     Welcome .
     </Card>
   </div>
 </template>
