@@ -2,7 +2,7 @@
     <div class="layout">
         <Layout :style="{minHeight: '100vh'}">
             <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
-                <Menu active-name="1-1" theme="dark" width="auto" :class="menuitemClasses">
+                <Menu :active-name="currentName" theme="dark" width="auto" :class="menuitemClasses">
                     <MenuItem name="1-1" to="/home">
                         <Icon type="md-home" />
                         <span>首页</span>
@@ -18,7 +18,7 @@
                   实习僧后台管理系统
                 </Header>
                 <Content :style="{padding: '0 16px 16px'}">
-                    <router-view></router-view>
+                    <router-view @onRouteChange="handleRouteChange"></router-view>
                 </Content>
             </Layout>
         </Layout>
@@ -41,7 +41,8 @@ export default {
   },
   data () {
       return {
-          isCollapsed: false
+          isCollapsed: false,
+          currentName:"1-1"
       };
   },
   computed: {
@@ -50,6 +51,26 @@ export default {
               'menu-item',
               this.isCollapsed ? 'collapsed-menu' : ''
           ]
+      }
+  },
+  methods: {
+    //   解决高亮问题
+      handleRouteChange(to){
+          let map = {
+              "home":"1-1",
+              "position":"1-2"
+          }
+          this.currentName = map[to.name]
+      }
+  },
+  watch: {
+      //检测路由解决高亮问题
+      $route(to){
+          let map = {
+             "home" : "1-1",
+             "position" : "1-2"
+          }
+        this.currentName = map[to.name]
       }
   }
 }

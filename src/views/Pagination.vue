@@ -1,6 +1,6 @@
 <template>
       <Page
-       :total="100"
+       :total="47"
        class="page" 
        show-sizer  
        :current="pageNo"

@@ -44,8 +44,16 @@ export default {
     let result = await get("/api/position")
 
     this.dataScore  = result.list
-    this.positionList = _.chunk(result.list,this.pageSize)[this.pageNo]
-    console.log(result)
+    this.positionList =  _.chunk(this.dataScore,this.pageSize)[this.pageNo-1]
+    // console.log(this.positionList)
+  },
+  watch: {
+      pageNo(){
+       this.positionList = _.chunk(this.dataScore,this.pageSize)[this.pageNo-1]
+      },
+      pageSize(){
+       this.positionList = _.chunk(this.dataScore,this.pageSize)[0]
+      }
   },
   methods: {
       show (index) {
@@ -58,6 +66,12 @@ export default {
           this.pageNo = pageNo
           this.pageSize = pageSize
       }
+  },
+    beforeRouteEnter(to, from, next){
+        next((vm)=>{
+            // console.log(vm)  
+            vm.$emit("onRouteChange", to)
+        })   
   },
   data () {
       return {
