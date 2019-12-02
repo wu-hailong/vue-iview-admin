@@ -23,13 +23,15 @@
         title="添加职位"
         width="700px"
         v-model="modalShow"
+        @on-ok="submitForm"
         class-name="vertical-center-modal">
            <Form :model="formData" label-position="left" :label-width="100">
               <FormItem label="公司LOGO">
                   <Upload
                    name="companyLogo"
-                   action="/api/position"
+                   action="/api/position/upload"
                    :before-upload="handleUpload"
+                   :on-success="handleSucc"
                    >
                       <Button icon="ios-cloud-upload-outline">点击上传公司LOGO</Button>
                   </Upload>
@@ -38,19 +40,34 @@
                   </div>
               </FormItem>
               <FormItem label="公司名称">
-                  <Input placeholder="请输入公司名称"/>
+                  <Input v-model="formData.company" placeholder="请输入公司名称"/>
               </FormItem>
               <FormItem label="招聘职位">
-                  <Input placeholder="请输入招聘职位"/>
+                  <Input v-model="formData.position" placeholder="请输入招聘职位"/>
               </FormItem>
               <FormItem label="公司地点">
-                  <Input placeholder="请输入公司点"/>
+                  <Input v-model="formData.companySite" placeholder="请输入公司点"/>
               </FormItem>
               <FormItem label="实习薪资/日薪">
-                  <Input placeholder="请输入实习薪资"/>
+                  <Input v-model="formData.salary" placeholder="请输入实习薪资"/>
               </FormItem>
               <FormItem label="周工作天数">
-                  <Input placeholder="请输入周工作天数"/>
+                  <Input v-model="formData.weeks" placeholder="请输入周工作天数"/>
+              </FormItem>
+              <FormItem label="Date">
+                  <Row>
+                      <Col span="11">
+                          <FormItem prop="date">
+                              <DatePicker :value="date" @on-change="handleDateChange" type="date" placeholder="Select date"></DatePicker>
+                          </FormItem>
+                      </Col>
+                      <Col span="2" style="text-align: center">-</Col>
+                      <Col span="11">
+                          <FormItem prop="time">
+                              <TimePicker :value="time" @on-change="handleTimeChange" type="time" placeholder="Select time"></TimePicker>
+                          </FormItem>
+                      </Col>
+                  </Row>
               </FormItem>
           </Form>
       </Modal>
@@ -68,7 +85,12 @@ import {
   Form,
   FormItem,
   Input,
-  Upload
+  Upload,
+  Col,
+  Row,
+  TimePicker,
+  DatePicker
+
 } from "view-design";
 import Pagination from "./Pagination";
 import { get } from "utils/http";
@@ -86,7 +108,11 @@ export default {
     Form,
     FormItem,
     Input,
-    Upload
+    Upload,
+    Col,
+    Row,
+    TimePicker,
+    DatePicker
   },
   async mounted() {
     let result = await get("/api/position");
@@ -110,6 +136,7 @@ export default {
     remove(index) {
       this.positionList.splice(index, 1);
     },
+
     handleUpload(file){
       // console.log(file)
       this.file = file
@@ -122,11 +149,33 @@ export default {
         this.uploadImg = event.srcElement.result
         
       }
-      // return false
+      // return this.isUpload
+    },
+    handleSucc(response, file, fileList){
+        console.log(response)
+        let { ret } = response
+        if(ret){
+          let {filename} = response.data
+          this.formData.companyLogo = filename
+          // this.file = null 
+        }else{
+          console.log("图片上传失败.")
+        }
+    },
+    submitForm(){
+      console.log(1)
     },
     handlePageInfo({ pageNo, pageSize }) {
       this.pageNo = pageNo;
       this.pageSize = pageSize;
+    },
+    handleDateChange(date){
+      // console.log(date)
+      this.formData.dateTime = date + this.time
+    },
+    handleTimeChange(time){
+      // console.log(time)
+      this.formData.dateTime = this.date + time
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -134,6 +183,7 @@ export default {
       // console.log(vm)
       vm.$emit("onRouteChange", to);
     });
+    
   },
   data() {
     return {
@@ -142,6 +192,9 @@ export default {
       modalShow: false,
       file:null,
       uploadImg:"",
+      date: new Date(),
+      time: new Date(),
+      isUpload:false,
       formData:{
         company: "",
         companyLogo: "",
@@ -149,6 +202,7 @@ export default {
         position: "",
         salary: "",
         weeks: "",
+        dateTime:''
       },
       formTitle: [
         {
