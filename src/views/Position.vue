@@ -93,8 +93,9 @@ import {
 
 } from "view-design";
 import Pagination from "./Pagination";
-import { get } from "utils/http";
+import { get , post} from "utils/http";
 import _ from "lodash";
+import moment from "moment"
 export default {
   components: {
     Page,
@@ -115,6 +116,7 @@ export default {
     DatePicker
   },
   async mounted() {
+
     let result = await get("/api/position");
 
     this.dataScore = result.list;
@@ -162,20 +164,31 @@ export default {
           console.log("图片上传失败.")
         }
     },
-    submitForm(){
-      console.log(1)
+    async submitForm(){
+        if(this.formData.createTime ===""){
+          this.formData.createTime = moment().format('YYYY-MM-DD, HH:mm:ss')
+
+        }
+        if(this.formData.companyLogo){
+          let result = await post('/api/position',this.formData)
+          
+        }else{
+          console.log("上传失败.")
+        }
     },
     handlePageInfo({ pageNo, pageSize }) {
       this.pageNo = pageNo;
       this.pageSize = pageSize;
     },
     handleDateChange(date){
-      // console.log(date)
-      this.formData.dateTime = date + this.time
+
+      this.formData.createTime = date +  this.time
+      console.log(this.formData.createTime)
+
     },
     handleTimeChange(time){
       // console.log(time)
-      this.formData.dateTime = this.date + time
+      this.formData.createTime = this.date + time
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -192,9 +205,9 @@ export default {
       modalShow: false,
       file:null,
       uploadImg:"",
-      date: new Date(),
-      time: new Date(),
       isUpload:false,
+      date:moment().format('YYYY-MM-DD '),
+      time:moment().format(' HH:mm:ss'),
       formData:{
         company: "",
         companyLogo: "",
@@ -202,7 +215,7 @@ export default {
         position: "",
         salary: "",
         weeks: "",
-        dateTime:''
+        createTime:''
       },
       formTitle: [
         {
