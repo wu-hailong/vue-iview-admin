@@ -25,3 +25,18 @@ export const post=( url ,data)=>{
      return err.message
   })
 }
+
+export const update=( url ,type ,data )=>{
+  return axios({
+    method: type,
+    data,
+    url
+  })
+  .then((result)=>{
+     return result.data.data
+  })
+  .catch((err)=>{
+     return err.message
+  })
+}
+

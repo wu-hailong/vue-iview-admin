@@ -8,69 +8,97 @@
       <Table stripe border :columns="formTitle" :data="positionList">
         <template slot="header">
           <strong>职位列表</strong>
-          <Button class="add" type="success" size="small" icon="md-add-circle" @click="modalShow = true">添加职位</Button>
+          <Button
+            class="add"
+            type="success"
+            size="small"
+            icon="md-add-circle"
+            @click="modalShow = true"
+          >添加职位</Button>
         </template>
         <template slot-scope="{ row, index }" slot="action">
-          <Button type="primary"  icon="md-create" size="small" style="margin-right: 5px" @click="show(index)">修改</Button>
-          <Button type="error" icon="ios-trash" size="small" @click="remove(index)">删除</Button>
+          <Button
+            type="primary"
+            icon="md-create"
+            size="small"
+            style="margin-right: 5px"
+            @click="changeMessage(index)"
+          >修改</Button>
+          <Button 
+            type="error" 
+            icon="ios-trash" 
+            size="small" 
+            @click="remove(index)"
+            >删除</Button>
         </template>
         <template slot="footer">
-          <Pagination @onPageInfo="handlePageInfo"></Pagination>
+          <Pagination :total="total" @onPageInfo="handlePageInfo"></Pagination>
         </template>
       </Table>
     </Card>
-      <Modal
-        title="添加职位"
-        width="700px"
-        v-model="modalShow"
-        @on-ok="submitForm"
-        class-name="vertical-center-modal">
-           <Form :model="formData" label-position="left" :label-width="100">
-              <FormItem label="公司LOGO">
-                  <Upload
-                   name="companyLogo"
-                   action="/api/position/upload"
-                   :before-upload="handleUpload"
-                   :on-success="handleSucc"
-                   >
-                      <Button icon="ios-cloud-upload-outline">点击上传公司LOGO</Button>
-                  </Upload>
-                  <div v-if="file !== null">
-                      <img :src="uploadImg" alt="" style="width: 60px; height: 60px;"/>
-                  </div>
+    <Modal
+      title="添加职位"
+      width="700px"
+      v-model="modalShow"
+      @on-ok="submitForm"
+      class-name="vertical-center-modal"
+     >
+      <Form :model="formData" label-position="left" :label-width="100">
+        <FormItem label="公司LOGO">
+          <Upload
+            name="companyLogo"
+            action="/api/position/upload"
+            :before-upload="handleUpload"
+            :on-success="handleSucc"
+          >
+            <Button icon="ios-cloud-upload-outline">点击上传公司LOGO</Button>
+          </Upload>
+          <div v-if="file !== null">
+            <img :src="uploadImg" alt style="width: 60px; height: 60px;" />
+          </div>
+        </FormItem>
+        <FormItem label="公司名称">
+          <Input v-model="formData.company" placeholder="请输入公司名称" />
+        </FormItem>
+        <FormItem label="招聘职位">
+          <Input v-model="formData.position" placeholder="请输入招聘职位" />
+        </FormItem>
+        <FormItem label="公司地点">
+          <Input v-model="formData.companySite" placeholder="请输入公司点" />
+        </FormItem>
+        <FormItem label="实习薪资/日薪">
+          <Input v-model="formData.salary" placeholder="请输入实习薪资" />
+        </FormItem>
+        <FormItem label="周工作天数">
+          <Input v-model="formData.weeks" placeholder="请输入周工作天数" />
+        </FormItem>
+        <FormItem label="Date">
+          <Row>
+            <Col span="11">
+              <FormItem prop="date">
+                <DatePicker
+                  :value="date"
+                  @on-change="handleDateChange"
+                  type="date"
+                  placeholder="Select date"
+                ></DatePicker>
               </FormItem>
-              <FormItem label="公司名称">
-                  <Input v-model="formData.company" placeholder="请输入公司名称"/>
+            </Col>
+            <Col span="2" style="text-align: center">-</Col>
+            <Col span="11">
+              <FormItem prop="time">
+                <TimePicker
+                  :value="time"
+                  @on-change="handleTimeChange"
+                  type="time"
+                  placeholder="Select time"
+                ></TimePicker>
               </FormItem>
-              <FormItem label="招聘职位">
-                  <Input v-model="formData.position" placeholder="请输入招聘职位"/>
-              </FormItem>
-              <FormItem label="公司地点">
-                  <Input v-model="formData.companySite" placeholder="请输入公司点"/>
-              </FormItem>
-              <FormItem label="实习薪资/日薪">
-                  <Input v-model="formData.salary" placeholder="请输入实习薪资"/>
-              </FormItem>
-              <FormItem label="周工作天数">
-                  <Input v-model="formData.weeks" placeholder="请输入周工作天数"/>
-              </FormItem>
-              <FormItem label="Date">
-                  <Row>
-                      <Col span="11">
-                          <FormItem prop="date">
-                              <DatePicker :value="date" @on-change="handleDateChange" type="date" placeholder="Select date"></DatePicker>
-                          </FormItem>
-                      </Col>
-                      <Col span="2" style="text-align: center">-</Col>
-                      <Col span="11">
-                          <FormItem prop="time">
-                              <TimePicker :value="time" @on-change="handleTimeChange" type="time" placeholder="Select time"></TimePicker>
-                          </FormItem>
-                      </Col>
-                  </Row>
-              </FormItem>
-          </Form>
-      </Modal>
+            </Col>
+          </Row>
+        </FormItem>
+      </Form>
+    </Modal>
   </div>
 </template>
 <script>
@@ -90,12 +118,11 @@ import {
   Row,
   TimePicker,
   DatePicker
-
 } from "view-design";
 import Pagination from "./Pagination";
-import { get , post} from "utils/http";
+import { get, post , update} from "utils/http";
 import _ from "lodash";
-import moment from "moment"
+import moment from "moment";
 export default {
   components: {
     Page,
@@ -116,9 +143,9 @@ export default {
     DatePicker
   },
   async mounted() {
-
     let result = await get("/api/position");
-
+   
+    this.total = result.total
     this.dataScore = result.list;
     this.positionList = _.chunk(this.dataScore, this.pageSize)[this.pageNo - 1];
     // console.log(this.positionList)
@@ -134,61 +161,63 @@ export default {
     }
   },
   methods: {
-    show(index) {},
-    remove(index) {
-      this.positionList.splice(index, 1);
+    changeMessage(index){
+      
+    },
+    async remove(index) {
+        let { _id:id , companyLogo:tempCompanyLogo } = this.positionList[index] 
+        await update("/api/position","delete",{
+          id,
+          tempCompanyLogo
+        })
+        this.positionList.splice(index,1)
     },
 
-    handleUpload(file){
+    handleUpload(file) {
       // console.log(file)
-      this.file = file
-      const reader = new FileReader
+      this.file = file;
+      const reader = new FileReader();
       //将读取的文件编码成Data URL
-      reader.readAsDataURL(file)
-      reader.onload = (event)=>{
+      reader.readAsDataURL(file);
+      reader.onload = event => {
         //拿到图片的路径
         // console.log(event)
-        this.uploadImg = event.srcElement.result
-        
-      }
+        this.uploadImg = event.srcElement.result;
+      };
       // return this.isUpload
     },
-    handleSucc(response, file, fileList){
-        console.log(response)
-        let { ret } = response
-        if(ret){
-          let {filename} = response.data
-          this.formData.companyLogo = filename
-          // this.file = null 
-        }else{
-          console.log("图片上传失败.")
-        }
+    handleSucc(response, file, fileList) {
+      console.log(response);
+      let { ret } = response;
+      if (ret) {
+        let { filename } = response.data;
+        this.formData.companyLogo = filename;
+        // this.file = null
+      } else {
+        console.log("图片上传失败.");
+      }
     },
-    async submitForm(){
-        if(this.formData.createTime ===""){
-          this.formData.createTime = moment().format('YYYY-MM-DD, HH:mm:ss')
-
-        }
-        if(this.formData.companyLogo){
-          let result = await post('/api/position',this.formData)
-          
-        }else{
-          console.log("上传失败.")
-        }
+    async submitForm() {
+      if (this.formData.createTime === "") {
+        this.formData.createTime = moment().format("YYYY-MM-DD  HH:mm:ss");
+      }
+      if (this.formData.companyLogo) {
+        let result = await post("/api/position", this.formData);
+      } else {
+        console.log("上传失败.");
+      }
     },
     handlePageInfo({ pageNo, pageSize }) {
       this.pageNo = pageNo;
       this.pageSize = pageSize;
     },
-    handleDateChange(date){
-
-      this.formData.createTime = date +  this.time
-      console.log(this.formData.createTime)
-
+    handleDateChange(date) {
+      this.formData.createTime = date + this.time;
+      console.log(this.formData.createTime);
     },
-    handleTimeChange(time){
+    handleTimeChange(time) {
       // console.log(time)
-      this.formData.createTime = this.date + time
+      this.formData.createTime = this.date + time;
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -196,26 +225,26 @@ export default {
       // console.log(vm)
       vm.$emit("onRouteChange", to);
     });
-    
   },
   data() {
     return {
       pageSize: 5,
-      pageNo: 1,  
+      pageNo: 1,
       modalShow: false,
-      file:null,
-      uploadImg:"",
-      isUpload:false,
-      date:moment().format('YYYY-MM-DD '),
-      time:moment().format(' HH:mm:ss'),
-      formData:{
+      file: null,
+      uploadImg: "",
+      isUpload: false,
+      date: moment().format("YYYY-MM-DD "),
+      time: moment().format(" HH:mm:ss"),
+      total:0,
+      formData: {
         company: "",
         companyLogo: "",
         companySite: "",
         position: "",
         salary: "",
         weeks: "",
-        createTime:''
+        createTime: ""
       },
       formTitle: [
         {
@@ -275,13 +304,13 @@ export default {
   height: 60px;
   width: 60px;
 }
-.ivu-table-title{
-	padding: 0 20px;
-  display:flex;
-  justify-content:space-between ;
+.ivu-table-title {
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
-.ivu-table-title strong{
-	font-size:20px
+.ivu-table-title strong {
+  font-size: 20px;
 }
 </style>

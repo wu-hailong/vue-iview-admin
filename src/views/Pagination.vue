@@ -1,12 +1,12 @@
 <template>
       <Page
-       :total="47"
+       :total="total"
        class="page" 
        show-sizer  
        :current="pageNo"
        placement="top"
        :page-size-opts="pageOpt"
-       :page-size="5"
+       :page-size="pageSize"
        @on-change="handleChange"
        @on-page-size-change="handlePageSizeChange"
        />
@@ -15,6 +15,7 @@
 <script>
 import { Page } from 'view-design'
 export default {
+  props:["total"],
   data () {
     return {
       pageOpt:[5,10,20],
