@@ -5,36 +5,9 @@
       <BreadcrumbItem>管理职位</BreadcrumbItem>
     </Breadcrumb>
     <Card>
-      <Table stripe border :columns="formTitle" :data="positionList">
-        <template slot="header">
-          <strong>职位列表</strong>
-          <Button
-            class="add"
-            type="success"
-            size="small"
-            icon="md-add-circle"
-            @click="modalShow = true"
-          >添加职位</Button>
-        </template>
-        <template slot-scope="{ row, index }" slot="action">
-          <Button
-            type="primary"
-            icon="md-create"
-            size="small"
-            style="margin-right: 5px"
-            @click="changeMessage(index)"
-          >修改</Button>
-          <Button 
-            type="error" 
-            icon="ios-trash" 
-            size="small" 
-            @click="remove(index)"
-            >删除</Button>
-        </template>
-        <template slot="footer">
-          <Pagination :total="total" @onPageInfo="handlePageInfo"></Pagination>
-        </template>
-      </Table>
+      <PositionList :positionList="positionList">
+        <Pagination :total="total" @onPageInfo="handlePageInfo"></Pagination>
+      </PositionList>
     </Card>
     <Modal
       title="添加职位"
@@ -108,7 +81,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Card,
-  Page,
   Modal,
   Form,
   FormItem,
@@ -120,18 +92,17 @@ import {
   DatePicker
 } from "view-design";
 import Pagination from "./Pagination";
+import PositionList from "./PositionList"
 import { get, post , update} from "utils/http";
 import _ from "lodash";
 import moment from "moment";
+
 export default {
   components: {
-    Page,
     Card,
-    Table,
     Button,
     Breadcrumb,
     BreadcrumbItem,
-    Pagination,
     Modal,
     Form,
     FormItem,
@@ -140,11 +111,12 @@ export default {
     Col,
     Row,
     TimePicker,
-    DatePicker
+    DatePicker,
+    PositionList,
+    Pagination
   },
   async mounted() {
     let result = await get("/api/position");
-   
     this.total = result.total
     this.dataScore = result.list;
     this.positionList = _.chunk(this.dataScore, this.pageSize)[this.pageNo - 1];
@@ -161,18 +133,15 @@ export default {
     }
   },
   methods: {
+    handlePageInfo({ pageNo, pageSize }) {
+      console.log(pageNo,pageSize)
+      
+      this.pageNo = pageNo;
+      this.pageSize = pageSize;
+    },
     changeMessage(index){
       
     },
-    async remove(index) {
-        let { _id:id , companyLogo:tempCompanyLogo } = this.positionList[index] 
-        await update("/api/position","delete",{
-          id,
-          tempCompanyLogo
-        })
-        this.positionList.splice(index,1)
-    },
-
     handleUpload(file) {
       // console.log(file)
       this.file = file;
@@ -207,10 +176,7 @@ export default {
         console.log("上传失败.");
       }
     },
-    handlePageInfo({ pageNo, pageSize }) {
-      this.pageNo = pageNo;
-      this.pageSize = pageSize;
-    },
+
     handleDateChange(date) {
       this.formData.createTime = date + this.time;
       console.log(this.formData.createTime);
